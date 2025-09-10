@@ -1,1 +1,15 @@
-<h3>Popup</h3>
+<h6 class="title">Выезд из Германии</h6>
+
+@switch (departuresDatesResourse().status) {
+  @case (ResourseStatus.Success) {
+    @for (date of departuresDatesResourse().data; track $index) {
+      <span>{{ date }};</span>
+    }
+  }
+  @case (ResourseStatus.Error) {
+    <p>Ошибка {{ departuresDatesResourse().error }}</p>
+  }
+  @default {
+    <p>Загрузка</p>
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "DePrevoz Info",
+  "version": "1.0.0",
+  "description": "A simple extension with information about DePrevoz trips",
+  "action": {
+    "default_title": "DePrevoz Info - information about DePrevoz trips",
+    "default_popup": "index.html#/popup",
+    "default_icon": {
+      "16": "deprevoz-logo.jpg",
+      "32": "deprevoz-logo.jpg"
+    }
+  },
+  "icons": {
+    "16": "deprevoz-logo.jpg",
+    "32": "deprevoz-logo.jpg",
+    "48": "deprevoz-logo.jpg",
+    "128": "deprevoz-logo.jpg"
+  },
+  "options_ui": {
+    "page": "index.html#/options"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "deprevoz-logo@com"
+    }
+  },
+  "host_permissions": [
+    "*://deprevoz.com/*"
+  ]
+}
