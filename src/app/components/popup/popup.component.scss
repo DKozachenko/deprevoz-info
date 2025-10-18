@@ -1,0 +1,50 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+}
+
+.heading {
+  font-size: 22px;
+  font-weight: 700;
+
+  margin-bottom: 10px;
+}
+
+.dates-list {
+  list-style-type: disc;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  &__item {
+    font-size: 16px;
+
+    &.past-date {
+      color: #808080;
+    }
+  }
+}
+
+.error-text {
+  color: #ff0033;
+}
+
+$loader-size: 45px;
+$loader-thickness: 9px;
+
+.loader {
+  border: $loader-thickness solid #F3F3F3;
+  border-top: $loader-thickness solid #333333;
+  border-radius: 50%;
+  width: $loader-size;
+  height: $loader-size;
+  margin: 0 auto;
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

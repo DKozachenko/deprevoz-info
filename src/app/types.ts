@@ -36,3 +36,8 @@ export type Resourse<T, E extends Error = Error> =
   | ResourseFailed<E>;
 
 export type DepartureDate = `${number}.${number}`;
+
+export interface VisibleDepartureDate {
+  date: DepartureDate;
+  diffWithNow: number;
+}

@@ -1,15 +1,30 @@
-<h6 class="title">Выезд из Германии</h6>
-
 @switch (departuresDatesResourse().status) {
   @case (ResourseStatus.Success) {
-    @for (date of departuresDatesResourse().data; track $index) {
-      <span>{{ date }};</span>
-    }
+    <h6 class="heading">Выезд из Германии</h6>
+
+    <ul class="dates-list">
+      @for (visibleDate of departuresDatesResourse().data; track $index) {
+        @let isPastDate = visibleDate.diffWithNow < 0;
+        <li class="dates-list__item" [class.past-date]="isPastDate">
+          {{ visibleDate.date }}
+
+          @if (visibleDate.diffWithNow > 0) {
+            (через {{ visibleDate.diffWithNow }} дней / дня)
+          } @else if (visibleDate.diffWithNow === 0) {
+            (сегодня)
+          } @else {
+            ({{ visibleDate.diffWithNow * -1 }} дней / дня назад)
+          }
+        </li>
+      }
+    </ul>
+
   }
   @case (ResourseStatus.Error) {
-    <p>Ошибка {{ departuresDatesResourse().error }}</p>
+    <h6 class="heading error-text">Произошла ошибка:</h6>
+    <p class="error-text">{{ departuresDatesResourse().error }}</p>
   }
   @default {
-    <p>Загрузка</p>
+    <div class="loader"></div>
   }
 }
