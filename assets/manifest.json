@@ -22,7 +22,10 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "deprevoz-logo@com"
+      "id": "deprevoz-logo@com",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "host_permissions": [

@@ -2,11 +2,19 @@
   "name": "deprevoz-info",
   "version": "1.0.0",
   "scripts": {
-    "start": "ng serve",
-    "start:firefox": "web-ext run --source-dir ./dist/deprevoz-info/browser/",
-    "build": "ng build --configuration=production"
+    "start:web": "ng serve --configuration=web",
+    "start:extension": "web-ext run --browser-console --source-dir ./dist/deprevoz-info/browser/",
+    "build:extension": "ng build --configuration=extension",
+    "lint:extension": "web-ext lint --source-dir ./dist/deprevoz-info/browser/",
+    "assembly:extension": "npm run copy:license; npm run build:extension",
+    "copy:license": "cp ./LICENSE.md ./assets"
   },
   "private": true,
+  "author": {
+    "name": "Diana Kozachenko",
+    "email": "kozachenkodiana03@gmail.com"
+  },
+  "license": "MIT",
   "dependencies": {
     "@angular/common": "20.2.0",
     "@angular/compiler": "20.2.0",

@@ -1,7 +1,7 @@
 :host {
   display: block;
-  width: 100%;
-  max-width: 400px;
+  min-width: 200px;
+  min-height: 100px;
 }
 
 .heading {
@@ -22,7 +22,7 @@
     font-size: 16px;
 
     &.past-date {
-      color: #808080;
+      color: #b2b2b2;
     }
   }
 }
