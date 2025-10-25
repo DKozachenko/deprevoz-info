@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, Signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, Signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, Observable, of, switchMap } from 'rxjs';
 import { DEPARTUES_DATES_URL, DeprevozService } from '../../services/deprevoz.service';
-import { DepartureDate, Resourse, ResourseFailed, ResourseInitial, ResoursSuccess, ResourseStatus, VisibleDepartureDate } from '../../types';
+import { BrowserStorageService } from './../../services/browser-storage.service';
+import { DepartureDate, Resourse, ResourseFailed, ResourseInitial, ResoursSuccess, ResourseStatus, VisibleDepartureDate, VisibleDepartureDatesObject } from '../../types';
 
 const REGEXP_DATES_GROUP: string = 'dates';
 
@@ -14,9 +15,21 @@ const REGEXP_DATES_GROUP: string = 'dates';
 })
 export class PopupComponent {
   private readonly deprevozService = inject(DeprevozService);
+  private readonly browserStorageService = inject(BrowserStorageService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly ResourseStatus = ResourseStatus;
   protected readonly departuresDatesResourse = this.getDeparturesDatesResourse();
+
+  constructor() {
+    effect(() => {
+      if (this.departuresDatesResourse().status === ResourseStatus.Success) {
+        this.browserStorageService.set<VisibleDepartureDatesObject>({ data: this.departuresDatesResourse().data! })
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe();
+      }
+    });
+  }
 
   private getDeparturesDatesResourse(): Signal<Resourse<VisibleDepartureDate[]>> {
     const departuresDates$: Observable<Resourse<VisibleDepartureDate[]>> =
@@ -63,6 +76,7 @@ export class PopupComponent {
           status: ResourseStatus.Error,
           error: new Error(`Произошла ошибка при обращении к ${DEPARTUES_DATES_URL}: ${err}`, { cause: err }),
         }))),
+        takeUntilDestroyed(),
     );
 
     return toSignal(departuresDates$, {

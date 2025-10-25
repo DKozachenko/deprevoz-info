@@ -1,0 +1,55 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  margin-top: 20px;
+  padding-bottom: 15px;
+
+  &__group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    &.column {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    label {
+      font-size: 16px;
+      line-height: 1;
+      color: #3a3a3a;
+    }
+
+    input[disabled] {
+      opacity: .5;
+    }
+
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid darkgray;
+      border-radius: 4px;
+
+      color: #000;
+      font-size: 16px;
+      line-height: 1;
+      padding: 4px;
+
+      outline: none;
+    }
+
+    input[type="text"] {
+      max-width: 350px;
+    }
+  }
+}
+
+.bold {
+  font-weight: 700;
+}

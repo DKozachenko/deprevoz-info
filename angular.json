@@ -55,12 +55,24 @@
                   "inlineCritical": false
                 },
                 "fonts": true
-              }
+              },
+              "fileReplacements": [
+                {
+                  "replace": "src/app/environments/environment.web.ts",
+                  "with": "src/app/environments/environment.extension.ts"
+                }
+              ]
             },
             "web": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/app/environments/environment.web.ts",
+                  "with": "src/app/environments/environment.web.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "extension"

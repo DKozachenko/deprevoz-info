@@ -1,2 +1,23 @@
 <h3>Настройки</h3>
 
+<form class="form" [formGroup]="form">
+  <div class="form__group">
+    <label for="highlight-dates-on-search-page">Подсветить даты на странице поиска:</label>
+    <input type="checkbox" id="highlight-dates-on-search-page" formControlName="highlightDatesOnSearchPage" />
+  </div>
+
+  <div class="form__group column">
+    <label for="color-for-product-in-time">Цвет для товаров, которые <span class="bold">ТОЧНО</span> успеют прийти к ближайшему отправлению:</label>
+    <input type="text" id="color-for-product-in-time" formControlName="colorForProductInTime" />
+  </div>
+
+  <div class="form__group column">
+    <label for="color-for-uncertain-product">Цвет для товаров, которые <span class="bold">ВОЗМОЖНО (50 на 50)</span> успеют прийти к ближайшему отправлению:</label>
+    <input type="text" id="color-for-uncertain-product" formControlName="colorForUncertainProduct" />
+  </div>
+
+  <div class="form__group column">
+    <label for="color-for-product-not-in-time">Цвет для товаров, которые <span class="bold">ТОЧНО НЕ</span> успеют прийти к ближайшему отправлению:</label>
+    <input type="text" id="color-for-product-not-in-time" formControlName="colorForProductNotInTime" />
+  </div>
+</form>
