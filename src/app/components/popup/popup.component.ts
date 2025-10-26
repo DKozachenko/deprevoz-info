@@ -4,7 +4,7 @@ import { catchError, map, Observable, of, switchMap } from 'rxjs';
 import { differenceInDays } from 'date-fns';
 import { DEPARTUES_DATES_URL, DeprevozService } from '../../services/deprevoz.service';
 import { BrowserStorageService } from './../../services/browser-storage.service';
-import { DepartureDate, Resourse, ResourseFailed, ResourseInitial, ResoursSuccess, ResourseStatus, VisibleDepartureDate, DatesDataKeys, DatesData } from '../../types';
+import { DepartureDateRaw, Resourse, ResourseFailed, ResourseInitial, ResoursSuccess, ResourseStatus, DepartureDate, DatesDataKeys, DatesData } from '../../types';
 
 const REGEXP_DATES_GROUP: string = 'dates';
 
@@ -26,9 +26,7 @@ export class PopupComponent {
     effect(() => {
       if (this.departuresDatesResourse().status === ResourseStatus.Success) {
         this.browserStorageService.set<DatesData>({
-          [DatesDataKeys.DATES_WITH_DIFFERENCE]: {
-            data: this.departuresDatesResourse().data!
-          }
+          [DatesDataKeys.DATES_WITH_DIFFERENCE]: this.departuresDatesResourse().data!
         })
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe();
@@ -36,8 +34,8 @@ export class PopupComponent {
     });
   }
 
-  private getDeparturesDatesResourse(): Signal<Resourse<VisibleDepartureDate[]>> {
-    const departuresDates$: Observable<Resourse<VisibleDepartureDate[]>> =
+  private getDeparturesDatesResourse(): Signal<Resourse<DepartureDate[]>> {
+    const departuresDates$: Observable<Resourse<DepartureDate[]>> =
       of(<ResourseInitial>{
         data: null,
         status: ResourseStatus.Initial,
@@ -68,9 +66,9 @@ export class PopupComponent {
             }
           }
 
-          const datesResultArray = <DepartureDate[]>Array.from(datesResult);
+          const datesResultArray = <DepartureDateRaw[]>Array.from(datesResult);
 
-          return <ResoursSuccess<VisibleDepartureDate[]>>{
+          return <ResoursSuccess<DepartureDate[]>>{
             data: this.calculateDiffWithNowForDates(datesResultArray),
             status: ResourseStatus.Success,
             error: null,
@@ -93,14 +91,16 @@ export class PopupComponent {
     });
   }
 
-  private calculateDiffWithNowForDates(rawDates: DepartureDate[]): VisibleDepartureDate[] {
+  private calculateDiffWithNowForDates(rawDates: DepartureDateRaw[]): DepartureDate[] {
     return rawDates.map(rawDate => {
       const now = new Date();
       const [day, month] = rawDate.split('.');
+      // TODO: set timezone
       const fullRawDate = new Date(now.getFullYear(), Number(month) - 1, Number(day));
 
       return {
         date: rawDate,
+        dateObject: fullRawDate,
         diffWithNow: differenceInDays(fullRawDate, now),
       }
     });

@@ -1,5 +1,6 @@
-import { parse } from 'date-fns';
+import { differenceInDays, parse, isValid } from 'date-fns';
 import { DatesData, DatesDataKeys, ExtensionStorage, Options, OptionsKeys, ProductColors, ProductColorsKeys } from '../src/app/types';
+import { eu } from 'date-fns/locale/eu';
 
 function throttle(func: Function, delay: number) {
   let lastCall = 0;
@@ -67,12 +68,11 @@ function dropInterval() {
 function handleSearchResults() {
   getConfig()
     .then(config => {
-      console.log('EBAT config', config);
       if (!config[OptionsKeys.HIGHLIGHT_DATES_ON_SEARCH_PAGE]) {
         return;
       }
 
-      if (!config[DatesDataKeys.DATES_WITH_DIFFERENCE]?.data) {
+      if (!config[DatesDataKeys.DATES_WITH_DIFFERENCE] || config[DatesDataKeys.DATES_WITH_DIFFERENCE]?.length < 1) {
         return;
       }
 
@@ -128,14 +128,49 @@ function handleSearchItemOnSearchPage(item: HTMLDivElement, config: Partial<Exte
     return;
   }
 
+  handleDeliveryElement(primaryDeliveryDateElem, config);
+
   const secondaryDeliveryMessage = item.querySelector<HTMLDivElement>('.udm-secondary-delivery-message');
   const secondaryDeliveryDateElem = secondaryDeliveryMessage?.querySelector<HTMLSpanElement>('.a-text-bold');
 
-  const usualDeliveryDate = parse(primaryDeliveryDateElem.textContent.trim(), 'EEE dd MMM', new Date());
-  const fastestDeliveryDate = secondaryDeliveryDateElem
-    ? parse(secondaryDeliveryDateElem.textContent.trim(), 'EEE dd MMM', new Date())
-    : null;
+  if (secondaryDeliveryDateElem) {
+    handleDeliveryElement(secondaryDeliveryDateElem, config);
+  }
+}
 
-  console.log('EBAT usualDeliveryDate', usualDeliveryDate);
-  console.log('EBAT fastestDeliveryDate', fastestDeliveryDate);
+function handleDeliveryElement(primaryDeliveryDateElem: HTMLSpanElement, config: Partial<ExtensionStorage>) {
+  // TODO: parse Today / Tomorrow
+  // TODO: parse range
+  const deliveryDate = parse(primaryDeliveryDateElem.textContent.trim(), 'EEE dd MMM', new Date());
+
+  if (!isValid(deliveryDate)) {
+    return;
+  }
+
+  if (!config[DatesDataKeys.DATES_WITH_DIFFERENCE] || config[DatesDataKeys.DATES_WITH_DIFFERENCE].length < 1) {
+    return;
+  }
+
+
+  const closestDepartureDate = config[DatesDataKeys.DATES_WITH_DIFFERENCE]
+    .toSorted((a, b) => a.diffWithNow - b.diffWithNow)
+    .filter(departureDate => departureDate.diffWithNow >= 0)
+    ?.at(0);
+
+  if (!closestDepartureDate) {
+    return;
+  }
+
+  const daysBetweenDeliveryAndDeparture = differenceInDays(closestDepartureDate.dateObject, deliveryDate);
+
+  if (daysBetweenDeliveryAndDeparture > 0) {
+    const suitableColor = config[ProductColorsKeys.COLOR_FOR_PRODUCT_IN_TIME] ?? 'initial';
+    primaryDeliveryDateElem.style.color = suitableColor;
+  } else if (daysBetweenDeliveryAndDeparture === 0) {
+    const suitableColor = config[ProductColorsKeys.COLOR_FOR_UNCERTAIN_PRODUCT] ?? 'initial';
+    primaryDeliveryDateElem.style.color = suitableColor;
+  } else {
+    const suitableColor = config[ProductColorsKeys.COLOR_FOR_PRODUCT_NOT_IN_TIME] ?? 'initial';
+    primaryDeliveryDateElem.style.color = suitableColor;
+  }
 }

@@ -35,16 +35,12 @@ export type Resourse<T, E extends Error = Error> =
   | ResoursSuccess<T>
   | ResourseFailed<E>;
 
-export type DepartureDate = `${number}.${number}`;
+export type DepartureDateRaw = `${number}.${number}`;
 
-// TODO: Чет мне кажется, надо переименовать
-export interface VisibleDepartureDate {
-  date: DepartureDate;
+export interface DepartureDate {
+  date: DepartureDateRaw;
+  dateObject: Date;
   diffWithNow: number;
-}
-
-export interface VisibleDepartureDatesObject {
-  data: VisibleDepartureDate[]
 }
 
 export const enum DatesDataKeys {
@@ -52,7 +48,7 @@ export const enum DatesDataKeys {
 }
 
 export interface DatesData {
-  [DatesDataKeys.DATES_WITH_DIFFERENCE]: VisibleDepartureDatesObject;
+  [DatesDataKeys.DATES_WITH_DIFFERENCE]: DepartureDate[];
 }
 
 export const enum OptionsKeys {
