@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "scripts": {
     "start:web": "ng serve --configuration=web",
-    "start:extension": "web-ext run --browser-console --source-dir ./dist/deprevoz-info/browser/",
-    "build:extension": "ng build --configuration=extension",
+    "start:extension": "web-ext run --source-dir ./dist/deprevoz-info/browser/",
+    "build:extension": "npm run compile:content-script; ng build --configuration=extension",
     "lint:extension": "web-ext lint --source-dir ./dist/deprevoz-info/browser/",
     "assembly:extension": "npm run copy:license; npm run build:extension",
+    "compile:content-script": "esbuild ./assets/handle-items.ts --bundle --minify --outfile=./assets/index.js",
     "copy:license": "cp ./LICENSE.md ./assets"
   },
   "private": true,
@@ -30,6 +31,7 @@
     "@angular/build": "20.2.1",
     "@angular/cli": "20.2.1",
     "@angular/compiler-cli": "20.2.0",
+    "esbuild": "0.25.11",
     "typescript": "5.9.2",
     "web-ext": "9.0.0"
   }

@@ -31,5 +31,11 @@
   },
   "host_permissions": [
     "*://deprevoz.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.amazon.de/s?*", "*://*.amazon.de/*/s?*"],
+      "js": ["index.js"]
+    }
   ]
 }

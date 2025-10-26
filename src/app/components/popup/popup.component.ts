@@ -105,6 +105,7 @@ export class PopupComponent {
     const oneDay = 1000 * 60 * 60 * 24;
     const diffInTime = end.getTime() - start.getTime();
     const diffInDays = Math.round(diffInTime / oneDay);
+    // TODO: чет мне кажется странно все равно дни отображаются
     return diffInDays + 1;
   }
 }

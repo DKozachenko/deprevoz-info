@@ -25,7 +25,8 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "assets"
+                "input": "assets",
+                "ignore": ["*.ts"]
               }
             ],
             "styles": [
