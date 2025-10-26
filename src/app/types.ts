@@ -75,4 +75,4 @@ export interface ProductColors {
   [ProductColorsKeys.COLOR_FOR_PRODUCT_NOT_IN_TIME]: string;
 }
 
-export interface ExtensionStorage extends Options, ProductColors {};
+export interface ExtensionStorage extends Options, ProductColors, DatesData {};

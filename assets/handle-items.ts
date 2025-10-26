@@ -1,3 +1,6 @@
+import { parse } from 'date-fns';
+import { DatesData, DatesDataKeys, ExtensionStorage, Options, OptionsKeys, ProductColors, ProductColorsKeys } from '../src/app/types';
+
 function throttle(func: Function, delay: number) {
   let lastCall = 0;
 
@@ -62,6 +65,77 @@ function dropInterval() {
 
 
 function handleSearchResults() {
-  console.log('EBAT', 'handleSearchResults');
+  getConfig()
+    .then(config => {
+      console.log('EBAT config', config);
+      if (!config[OptionsKeys.HIGHLIGHT_DATES_ON_SEARCH_PAGE]) {
+        return;
+      }
+
+      if (!config[DatesDataKeys.DATES_WITH_DIFFERENCE]?.data) {
+        return;
+      }
+
+      if (!config[ProductColorsKeys.COLOR_FOR_PRODUCT_IN_TIME] &&
+        !config[ProductColorsKeys.COLOR_FOR_UNCERTAIN_PRODUCT] &&
+        !config[ProductColorsKeys.COLOR_FOR_PRODUCT_NOT_IN_TIME]) {
+        return;
+      }
+
+      const resultItemDivs = document.querySelectorAll<HTMLDivElement>('.s-result-item');
+      resultItemDivs.forEach(searchItem => handleSearchItemOnSearchPage(searchItem, config));
+    })
+    .catch(err => {
+      console.error(`Ошибка при получении ключей '${OptionsKeys.HIGHLIGHT_DATES_ON_SEARCH_PAGE}', '${ProductColorsKeys.COLOR_FOR_PRODUCT_IN_TIME}',
+        '${ProductColorsKeys.COLOR_FOR_PRODUCT_NOT_IN_TIME}', '${ProductColorsKeys.COLOR_FOR_UNCERTAIN_PRODUCT}', '${DatesDataKeys.DATES_WITH_DIFFERENCE}'
+        из хранилища: ${err}`)
+    });
 }
 
+async function getConfig(): Promise<Partial<ExtensionStorage>> {
+  return Promise.all([getOptions(), getProductColors(), getDatesData()]).then(([options, colors, dates]) => ({
+    ...options,
+    ...colors,
+    ...dates
+  }));
+}
+
+async function getOptions(): Promise<Partial<Options>> {
+  return browser.storage.sync.get([
+    OptionsKeys.HIGHLIGHT_DATES_ON_SEARCH_PAGE,
+  ]);
+}
+
+async function getProductColors(): Promise<Partial<ProductColors>> {
+  return browser.storage.sync.get([
+    ProductColorsKeys.COLOR_FOR_PRODUCT_IN_TIME,
+    ProductColorsKeys.COLOR_FOR_UNCERTAIN_PRODUCT,
+    ProductColorsKeys.COLOR_FOR_PRODUCT_NOT_IN_TIME,
+  ]);
+}
+
+async function getDatesData(): Promise<Partial<DatesData>> {
+  return browser.storage.sync.get([
+    DatesDataKeys.DATES_WITH_DIFFERENCE,
+  ]);
+}
+
+function handleSearchItemOnSearchPage(item: HTMLDivElement, config: Partial<ExtensionStorage>) {
+  const primaryDeliveryMessage = item.querySelector<HTMLDivElement>('.udm-primary-delivery-message');
+  const primaryDeliveryDateElem = primaryDeliveryMessage?.querySelector<HTMLSpanElement>('.a-text-bold');
+
+  if (!primaryDeliveryDateElem) {
+    return;
+  }
+
+  const secondaryDeliveryMessage = item.querySelector<HTMLDivElement>('.udm-secondary-delivery-message');
+  const secondaryDeliveryDateElem = secondaryDeliveryMessage?.querySelector<HTMLSpanElement>('.a-text-bold');
+
+  const usualDeliveryDate = parse(primaryDeliveryDateElem.textContent.trim(), 'EEE dd MMM', new Date());
+  const fastestDeliveryDate = secondaryDeliveryDateElem
+    ? parse(secondaryDeliveryDateElem.textContent.trim(), 'EEE dd MMM', new Date())
+    : null;
+
+  console.log('EBAT usualDeliveryDate', usualDeliveryDate);
+  console.log('EBAT fastestDeliveryDate', fastestDeliveryDate);
+}

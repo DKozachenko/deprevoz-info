@@ -9,7 +9,7 @@
           {{ visibleDate.date }}
 
           @if (visibleDate.diffWithNow > 0) {
-            (через {{ visibleDate.diffWithNow }} дней / дня)
+            (через {{ visibleDate.diffWithNow + 1 }} дней / дня)
           } @else if (visibleDate.diffWithNow === 0) {
             (сегодня)
           } @else {

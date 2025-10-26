@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, Signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, Observable, of, switchMap } from 'rxjs';
+import { differenceInDays } from 'date-fns';
 import { DEPARTUES_DATES_URL, DeprevozService } from '../../services/deprevoz.service';
 import { BrowserStorageService } from './../../services/browser-storage.service';
-import { DepartureDate, Resourse, ResourseFailed, ResourseInitial, ResoursSuccess, ResourseStatus, VisibleDepartureDate, VisibleDepartureDatesObject } from '../../types';
+import { DepartureDate, Resourse, ResourseFailed, ResourseInitial, ResoursSuccess, ResourseStatus, VisibleDepartureDate, DatesDataKeys, DatesData } from '../../types';
 
 const REGEXP_DATES_GROUP: string = 'dates';
 
@@ -24,7 +25,11 @@ export class PopupComponent {
   constructor() {
     effect(() => {
       if (this.departuresDatesResourse().status === ResourseStatus.Success) {
-        this.browserStorageService.set<VisibleDepartureDatesObject>({ data: this.departuresDatesResourse().data! })
+        this.browserStorageService.set<DatesData>({
+          [DatesDataKeys.DATES_WITH_DIFFERENCE]: {
+            data: this.departuresDatesResourse().data!
+          }
+        })
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe();
       }
@@ -96,16 +101,8 @@ export class PopupComponent {
 
       return {
         date: rawDate,
-        diffWithNow: this.getNumberOfDaysBetweenDates(now, fullRawDate),
+        diffWithNow: differenceInDays(fullRawDate, now),
       }
     });
-  }
-
-  private getNumberOfDaysBetweenDates(start: Date, end: Date): number {
-    const oneDay = 1000 * 60 * 60 * 24;
-    const diffInTime = end.getTime() - start.getTime();
-    const diffInDays = Math.round(diffInTime / oneDay);
-    // TODO: чет мне кажется странно все равно дни отображаются
-    return diffInDays + 1;
   }
 }
