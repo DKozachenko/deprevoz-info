@@ -1,6 +1,6 @@
 {
   "name": "deprevoz-info",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "scripts": {
     "start:web": "ng serve --configuration=web",
     "start:extension": "web-ext run --source-dir ./dist/deprevoz-info/browser/",
