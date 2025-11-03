@@ -1,5 +1,5 @@
-import { differenceInDays, parse, isValid } from 'date-fns';
-import { DatesData, DatesDataKeys, ExtensionStorage, Options, OptionsKeys, ProductColors, ProductColorsKeys } from '../src/app/types';
+import { differenceInDays, parse, isValid, addDays } from 'date-fns';
+import { DatesData, DatesDataKeys, DepartureDate, ExtensionStorage, Options, OptionsKeys, ProductColors, ProductColorsKeys } from '../src/app/types';
 
 function throttle(func: Function, delay: number) {
   let lastCall = 0;
@@ -15,6 +15,14 @@ function throttle(func: Function, delay: number) {
   };
 }
 
+const RANGE_REGEX: RegExp = /^(?<startDateDay>\d{1,2})(?<startDateMonth> [A-Z][a-z]{1,2})* - (?<endDateDay>\d{1,2})(?<endDateMonth> [A-Z][a-z]{1,2})*(?<endDateYear>, \d{4})*/;
+const enum RangeRegexGroups {
+  START_DATE_DAY = 'startDateDay',
+  START_DATE_MONTH = 'startDateMonth',
+  END_DATE_DAY = 'endDateDay',
+  END_DATE_MONTH = 'endDateMonth',
+  END_DATE_YEAR = 'endDateYear',
+}
 
 let intervalId: NodeJS.Timeout | null = null;
 const UPDATE_TIME = 2000;
@@ -138,18 +146,9 @@ function handleSearchItemOnSearchPage(item: HTMLDivElement, config: Partial<Exte
 }
 
 function handleDeliveryElement(deliveryDateElem: HTMLSpanElement, config: Partial<ExtensionStorage>) {
-  // TODO: parse Today / Tomorrow
-  // TODO: parse range
-  const deliveryDate = parse(deliveryDateElem.textContent.trim(), 'EEE dd MMM', new Date());
-
-  if (!isValid(deliveryDate)) {
+  if (!config || !config[DatesDataKeys.DATES_WITH_DIFFERENCE] || config[DatesDataKeys.DATES_WITH_DIFFERENCE].length < 1) {
     return;
   }
-
-  if (!config[DatesDataKeys.DATES_WITH_DIFFERENCE] || config[DatesDataKeys.DATES_WITH_DIFFERENCE].length < 1) {
-    return;
-  }
-
 
   const closestDepartureDate = config[DatesDataKeys.DATES_WITH_DIFFERENCE]
     // Filter only future and today dates
@@ -162,10 +161,43 @@ function handleDeliveryElement(deliveryDateElem: HTMLSpanElement, config: Partia
     return;
   }
 
+  if (isDateRange(deliveryDateElem.textContent.trim())) {
+    handleElementWithRangeDate(deliveryDateElem, closestDepartureDate, config);
+    return;
+  }
+
+  handleElementWithOnlyDate(deliveryDateElem, closestDepartureDate, config);
+}
+
+function isDateRange(textContent: string): boolean {
+  return RANGE_REGEX.test(textContent);
+}
+
+function handleElementWithOnlyDate(deliveryDateElem: HTMLSpanElement, closestDepartureDate: DepartureDate, config: Partial<ExtensionStorage>): void {
+  const elemText: string = deliveryDateElem.textContent.trim();
+  const deliveryDate = parseOnlyDate(elemText);
+
+  if (!isValid(deliveryDate)) {
+    return;
+  }
+
   const daysBetweenDeliveryAndDeparture = differenceInDays(closestDepartureDate.dateObject, deliveryDate);
   const suitableColor = getColorByDaysGap(daysBetweenDeliveryAndDeparture, config);
 
   deliveryDateElem.style.color = suitableColor;
+}
+
+function parseOnlyDate(elemText: string): Date {
+  if (elemText.includes('Today')) {
+    return new Date();
+  }
+
+  if (elemText.includes('Tomorrow') || elemText.includes('Overnight by')) {
+    return addDays(new Date(), 1);
+  }
+
+  // Mon 10 Nov
+  return parse(elemText, 'EEE dd MMM', new Date());
 }
 
 function getColorByDaysGap(days: number, config: Partial<ExtensionStorage>): string {
@@ -177,5 +209,85 @@ function getColorByDaysGap(days: number, config: Partial<ExtensionStorage>): str
     return config[ProductColorsKeys.COLOR_FOR_UNCERTAIN_PRODUCT] ?? 'initial';
   }
 
+  return config[ProductColorsKeys.COLOR_FOR_PRODUCT_NOT_IN_TIME] ?? 'initial';
+}
+
+function handleElementWithRangeDate(deliveryDateElem: HTMLSpanElement, closestDepartureDate: DepartureDate, config: Partial<ExtensionStorage>): void {
+  const elemText: string = deliveryDateElem.textContent.trim();
+  const dateRange = parseDateRange(elemText);
+
+  if (!dateRange) {
+    return;
+  }
+
+  const suitableColor = getColorByRangeDaysGap(dateRange[0], dateRange[1], closestDepartureDate.dateObject, config);
+
+  deliveryDateElem.style.color = suitableColor;
+}
+
+function parseDateRange(elemText: string): [Date, Date] | null {
+  const rangeResult: RegExpMatchArray | null = elemText.match(RANGE_REGEX);
+
+  if (!rangeResult || !rangeResult?.groups) {
+    return null;
+  }
+
+  const startDateDay: string | undefined = rangeResult.groups[RangeRegexGroups.START_DATE_DAY];
+  const startDateMonth: string | undefined = rangeResult.groups[RangeRegexGroups.START_DATE_MONTH];
+  const endDateDay: string | undefined = rangeResult.groups[RangeRegexGroups.END_DATE_DAY];
+  const endDateMonth: string | undefined = rangeResult.groups[RangeRegexGroups.END_DATE_MONTH];
+  const endDateYear: string | undefined = rangeResult.groups[RangeRegexGroups.END_DATE_YEAR];
+
+  // 19 Jan - 14 May, 2026
+  if (startDateDay && startDateMonth && endDateDay && endDateMonth && endDateYear) {
+    const start = parse(`${startDateDay}${startDateMonth}`, 'dd MMM', new Date());
+    const end = parse(`${endDateDay}${endDateMonth}${endDateYear}`, 'dd MMM, YYYY', new Date());
+
+    if (!isValid(start) || !isValid(end)) {
+      return null;
+    }
+
+    return [start, end];
+  }
+
+  // 28 Nov - 4 Dec
+  if (startDateDay && startDateMonth && endDateDay && endDateMonth) {
+    const start = parse(`${startDateDay}${startDateMonth}`, 'dd MMM', new Date());
+    const end = parse(`${endDateDay}${endDateMonth}`, 'dd MMM', new Date());
+
+    if (!isValid(start) || !isValid(end)) {
+      return null;
+    }
+
+    return [start, end];
+  }
+
+  // 24 - 26 Nov
+  if (startDateDay && endDateDay && endDateMonth) {
+    const start = parse(`${startDateDay}`, 'dd', new Date());
+    const end = parse(`${endDateDay}${endDateMonth}`, 'dd MMM', new Date());
+
+    if (!isValid(start) || !isValid(end)) {
+      return null;
+    }
+
+    return [start, end];
+  }
+
+  return null;
+}
+
+function getColorByRangeDaysGap(startDate: Date, endDate: Date, closestDate: Date, config: Partial<ExtensionStorage>): string {
+  // Whole range BEFORE closestDate
+  if (endDate < closestDate) {
+    return config[ProductColorsKeys.COLOR_FOR_PRODUCT_IN_TIME] ?? 'initial';
+  }
+
+  // closesDate BETWEEN range dates
+  if (startDate <= closestDate && closestDate <= endDate) {
+    return config[ProductColorsKeys.COLOR_FOR_UNCERTAIN_PRODUCT] ?? 'initial';
+  }
+
+  // Whole range AFTER closestDate
   return config[ProductColorsKeys.COLOR_FOR_PRODUCT_NOT_IN_TIME] ?? 'initial';
 }
