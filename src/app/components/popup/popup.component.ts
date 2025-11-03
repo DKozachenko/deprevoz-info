@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, Signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, Observable, of, switchMap } from 'rxjs';
-import { differenceInDays } from 'date-fns';
+import { differenceInCalendarDays } from 'date-fns';
 import { DEPARTUES_DATES_URL, DeprevozService } from '../../services/deprevoz.service';
 import { BrowserStorageService } from './../../services/browser-storage.service';
 import { DepartureDateRaw, Resourse, ResourseFailed, ResourseInitial, ResoursSuccess, ResourseStatus, DepartureDate, DatesDataKeys, DatesData } from '../../types';
@@ -32,6 +32,13 @@ export class PopupComponent {
           .subscribe();
       }
     });
+  }
+
+  // https://ru.stackoverflow.com/a/1455838
+  buildLabelForDayNumber(days: number): string {
+    const cases = [2, 0, 1, 1, 1, 2];
+    const titles = ['день', 'дня', 'дней'];
+    return `${titles[days % 100 > 4 && days % 100 < 20 ? 2 : cases[days % 10 < 5 ? days % 10 : 5]]}`;
   }
 
   private getDeparturesDatesResourse(): Signal<Resourse<DepartureDate[]>> {
@@ -95,13 +102,12 @@ export class PopupComponent {
     return rawDates.map(rawDate => {
       const now = new Date();
       const [day, month] = rawDate.split('.');
-      // TODO: set timezone
       const fullRawDate = new Date(now.getFullYear(), Number(month) - 1, Number(day));
 
       return {
         date: rawDate,
         dateObject: fullRawDate,
-        diffWithNow: differenceInDays(fullRawDate, now),
+        diffWithNow: differenceInCalendarDays(fullRawDate, now),
       }
     });
   }

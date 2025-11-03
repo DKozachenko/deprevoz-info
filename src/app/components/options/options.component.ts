@@ -44,6 +44,7 @@ export class OptionsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (value: boolean | null) => {
           // TODO: при вкл / выкл чекбокса эти значения могут заполнять прошлыми
+          // TODO: дефолтные значения
           if (value) {
             this.form.get(ProductColorsKeys.COLOR_FOR_PRODUCT_IN_TIME)?.enable();
             this.form.get(ProductColorsKeys.COLOR_FOR_UNCERTAIN_PRODUCT)?.enable();

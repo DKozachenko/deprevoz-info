@@ -4,9 +4,9 @@
   "scripts": {
     "start:web": "ng serve --configuration=web",
     "start:extension": "web-ext run --source-dir ./dist/deprevoz-info/browser/",
-    "build:extension": "npm run compile:content-script; ng build --configuration=extension",
+    "build:extension": "ng build --configuration=extension",
     "lint:extension": "web-ext lint --source-dir ./dist/deprevoz-info/browser/",
-    "assembly:extension": "npm run copy:license; npm run build:extension",
+    "assembly:extension": "npm run copy:license; npm run compile:content-script; npm run build:extension",
     "compile:content-script": "esbuild ./assets/handle-items.ts --bundle --minify --outfile=./assets/index.js",
     "copy:license": "cp ./LICENSE.md ./assets"
   },

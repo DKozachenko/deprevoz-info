@@ -9,11 +9,15 @@
           {{ visibleDate.date }}
 
           @if (visibleDate.diffWithNow > 0) {
-            (через {{ visibleDate.diffWithNow + 1 }} дней / дня)
+            @let futureDays = visibleDate.diffWithNow;
+
+            (через {{ futureDays }} {{ buildLabelForDayNumber(futureDays) }})
           } @else if (visibleDate.diffWithNow === 0) {
             (сегодня)
           } @else {
-            ({{ visibleDate.diffWithNow * -1 }} дней / дня назад)
+            @let pastDays = visibleDate.diffWithNow * -1;
+
+            ({{ pastDays }} {{ buildLabelForDayNumber(pastDays) }} назад)
           }
         </li>
       }

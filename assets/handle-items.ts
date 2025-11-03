@@ -1,6 +1,5 @@
 import { differenceInDays, parse, isValid } from 'date-fns';
 import { DatesData, DatesDataKeys, ExtensionStorage, Options, OptionsKeys, ProductColors, ProductColorsKeys } from '../src/app/types';
-import { eu } from 'date-fns/locale/eu';
 
 function throttle(func: Function, delay: number) {
   let lastCall = 0;

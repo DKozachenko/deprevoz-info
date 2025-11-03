@@ -20,7 +20,7 @@ npm run start:extension
 
 ```bash
 npm ci
-npm run build:extension
+npm run assembly:extension
 ```
 
 [Install](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Your_first_WebExtension#installing) as custom extension using path `./dist/deprevoz-info/browser`.
