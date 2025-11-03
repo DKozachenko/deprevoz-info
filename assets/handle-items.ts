@@ -137,10 +137,10 @@ function handleSearchItemOnSearchPage(item: HTMLDivElement, config: Partial<Exte
   }
 }
 
-function handleDeliveryElement(primaryDeliveryDateElem: HTMLSpanElement, config: Partial<ExtensionStorage>) {
+function handleDeliveryElement(deliveryDateElem: HTMLSpanElement, config: Partial<ExtensionStorage>) {
   // TODO: parse Today / Tomorrow
   // TODO: parse range
-  const deliveryDate = parse(primaryDeliveryDateElem.textContent.trim(), 'EEE dd MMM', new Date());
+  const deliveryDate = parse(deliveryDateElem.textContent.trim(), 'EEE dd MMM', new Date());
 
   if (!isValid(deliveryDate)) {
     return;
@@ -152,8 +152,10 @@ function handleDeliveryElement(primaryDeliveryDateElem: HTMLSpanElement, config:
 
 
   const closestDepartureDate = config[DatesDataKeys.DATES_WITH_DIFFERENCE]
-    .toSorted((a, b) => a.diffWithNow - b.diffWithNow)
+    // Filter only future and today dates
     .filter(departureDate => departureDate.diffWithNow >= 0)
+    // Sort by closest to today date
+    .toSorted((a, b) => a.diffWithNow - b.diffWithNow)
     ?.at(0);
 
   if (!closestDepartureDate) {
@@ -161,15 +163,19 @@ function handleDeliveryElement(primaryDeliveryDateElem: HTMLSpanElement, config:
   }
 
   const daysBetweenDeliveryAndDeparture = differenceInDays(closestDepartureDate.dateObject, deliveryDate);
+  const suitableColor = getColorByDaysGap(daysBetweenDeliveryAndDeparture, config);
 
-  if (daysBetweenDeliveryAndDeparture > 0) {
-    const suitableColor = config[ProductColorsKeys.COLOR_FOR_PRODUCT_IN_TIME] ?? 'initial';
-    primaryDeliveryDateElem.style.color = suitableColor;
-  } else if (daysBetweenDeliveryAndDeparture === 0) {
-    const suitableColor = config[ProductColorsKeys.COLOR_FOR_UNCERTAIN_PRODUCT] ?? 'initial';
-    primaryDeliveryDateElem.style.color = suitableColor;
-  } else {
-    const suitableColor = config[ProductColorsKeys.COLOR_FOR_PRODUCT_NOT_IN_TIME] ?? 'initial';
-    primaryDeliveryDateElem.style.color = suitableColor;
+  deliveryDateElem.style.color = suitableColor;
+}
+
+function getColorByDaysGap(days: number, config: Partial<ExtensionStorage>): string {
+  if (days > 0) {
+    return config[ProductColorsKeys.COLOR_FOR_PRODUCT_IN_TIME] ?? 'initial';
   }
+
+  if (days === 0) {
+    return config[ProductColorsKeys.COLOR_FOR_UNCERTAIN_PRODUCT] ?? 'initial';
+  }
+
+  return config[ProductColorsKeys.COLOR_FOR_PRODUCT_NOT_IN_TIME] ?? 'initial';
 }
