@@ -1,5 +1,5 @@
-import { Environment } from './environment.interface';
+import { Environment, EnvironmentMode } from './environment.interface';
 
 export const environment: Environment = {
-  mode: 'web',
+  mode: EnvironmentMode.WEB,
 }
